@@ -83,7 +83,8 @@ public class ConfigManager {
                 parseCache(root),
                 parseModeration(root),
                 parseRedis(root),
-                parseChatFormat(root)
+                parseChatFormat(root),
+                parseEffects(root)
             );
         } catch (IOException e) {
             plugin.logger().severe("Error parsing config.yml: " + e.getMessage());
@@ -107,7 +108,13 @@ public class ConfigManager {
                 getString(root, "correction_suggested", "<gold>Did you mean:</gold> <click:suggest_command:'{correction}'><hover:show_text:'<gray>Click to accept</gray>'>{correction}</hover></click>"),
                 getString(root, "api_error", "<red>An error occurred while processing your request. Please try again later.</red>"),
                 getString(root, "rate_limited", "<red>Too many requests. Please wait before sending another message.</red>"),
-                getString(root, "ai_unavailable", "<red>The AI service is unavailable. Please try again later.</red>")
+                getString(root, "ai_unavailable", "<red>The AI service is unavailable. Please try again later.</red>"),
+                getString(root, "actionbar_translated", "<gray>Message translated to</gray> <lang:{lang}>{lang}</lang>"),
+                getString(root, "actionbar_detected", "<gray>Detected:</gray> <lang:{lang}>{lang}</lang>"),
+                getString(root, "actionbar_blocked", "<red>Message blocked</red>"),
+                getString(root, "actionbar_warned", "<gold>Language warning issued</gold>"),
+                getString(root, "actionbar_allowed", "<green>Message sent</green>"),
+                getString(root, "actionbar_processing", "<yellow>Processing message...</yellow>")
             );
         } catch (IOException e) {
             plugin.logger().severe("Error parsing messages.yml: " + e.getMessage());
@@ -115,15 +122,34 @@ public class ConfigManager {
         }
     }
 
+    private static java.util.Map<String, String[]> PROVIDER_DEFAULTS = java.util.Map.of(
+        "openrouter", new String[]{"https://openrouter.ai/api/v1/chat/completions", "meta-llama/llama-3-8b-instruct:free"},
+        "openai", new String[]{"https://api.openai.com/v1/chat/completions", "gpt-4o-mini"},
+        "anthropic", new String[]{"https://api.anthropic.com/v1/messages", "claude-3-haiku-20240307"},
+        "gemini", new String[]{"https://generativelanguage.googleapis.com/v1beta/models", "gemini-2.0-flash"},
+        "huggingface", new String[]{"https://api-inference.huggingface.co/models", "mistralai/Mistral-7B-Instruct-v0.3"}
+    );
+
     private DialectConfig.AIConfig parseAI(JsonNode root) {
         JsonNode node = root.get("ai");
-        if (node == null) return new DialectConfig.AIConfig(true, "", "https://openrouter.ai/api/v1/chat/completions", "meta-llama/llama-3-8b-instruct:free", 0.1, 5, 3, 500);
+        if (node == null) return new DialectConfig.AIConfig(true, "openrouter", "", "", "", 0.1, 5, 3, 500);
+
+        String provider = getString(node, "provider", "openrouter");
+        String[] defaults = PROVIDER_DEFAULTS.getOrDefault(provider, PROVIDER_DEFAULTS.get("openrouter"));
+        String defaultEndpoint = defaults[0];
+        String defaultModel = defaults[1];
+
+        String apiKey = getString(node, "api_key", "");
+        if (apiKey.isBlank()) {
+            apiKey = getString(node, "openrouter_key", "");
+        }
 
         return new DialectConfig.AIConfig(
             getBoolean(node, "enabled", true),
-            getString(node, "openrouter_key", ""),
-            getString(node, "endpoint", "https://openrouter.ai/api/v1/chat/completions"),
-            getString(node, "model", "meta-llama/llama-3-8b-instruct:free"),
+            provider,
+            apiKey,
+            getString(node, "endpoint", defaultEndpoint),
+            getString(node, "model", defaultModel),
             getDouble(node, "temperature", 0.1),
             getInt(node, "timeout_seconds", 5),
             getInt(node, "max_retries", 3),
@@ -196,6 +222,15 @@ public class ConfigManager {
         );
     }
 
+    private DialectConfig.EffectsConfig parseEffects(JsonNode root) {
+        JsonNode node = root.get("effects");
+        if (node == null) return new DialectConfig.EffectsConfig(true, true);
+        return new DialectConfig.EffectsConfig(
+            getBoolean(node, "sounds", true),
+            getBoolean(node, "particles", true)
+        );
+    }
+
     private DialectConfig.ChatFormatConfig parseChatFormat(JsonNode root) {
         JsonNode node = root.get("chat_format");
         if (node == null) return new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true);
@@ -224,13 +259,14 @@ public class ConfigManager {
 
     private DialectConfig loadDefaultConfig() {
         return new DialectConfig(
-            new DialectConfig.AIConfig(true, "", "https://openrouter.ai/api/v1/chat/completions", "meta-llama/llama-3-8b-instruct:free", 0.1, 5, 3, 500),
+            new DialectConfig.AIConfig(true, "openrouter", "", "", "", 0.1, 5, 3, 500),
             new DialectConfig.DeepLConfig("", true, 5),
             new DialectConfig.LanguageConfig("WHITELIST", List.of("en", "de"), "en", Action.WARN, 0.75),
             new DialectConfig.CacheConfig(10000, 30),
             new DialectConfig.ModerationConfig(Action.TRANSLATE, true, 2, true),
             new DialectConfig.RedisConfig(false, "redis://localhost:6379", "", 2, false),
-            new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true)
+            new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true),
+            new DialectConfig.EffectsConfig(true, true)
         );
     }
 

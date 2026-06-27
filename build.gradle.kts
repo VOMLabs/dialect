@@ -32,7 +32,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito.core)
     testImplementation(libs.paper.api)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
 java {
@@ -42,8 +42,6 @@ java {
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-XDstringConcat=inline")
 }
-
-val serverPluginsDir = layout.projectDirectory.dir("$serverDir/plugins")
 
 tasks {
     shadowJar {
@@ -60,24 +58,21 @@ tasks {
     }
 
     build {
+        dependsOn("clean")
         dependsOn(shadowJar)
     }
 
-    register<Copy>("deployPlugin") {
+    named("classes") {
+        mustRunAfter("clean")
+    }
+
+    val deployPlugin = register<Copy>("deployPlugin") {
         dependsOn(shadowJar)
         group = "deployment"
         description = "Copies the shadowJar to the target server's plugins directory."
 
-        from(shadowJar.get().archiveFile)
-        into(serverPluginsDir)
-
-        doFirst {
-            logger.lifecycle("Deploying Dialect to: ${serverPluginsDir.asFile.absolutePath}")
-            serverPluginsDir.asFile.mkdirs()
-        }
-        doLast {
-            logger.lifecycle("Deployed Dialect-${project.version}.jar to ${serverPluginsDir.asFile.absolutePath}")
-        }
+        from(shadowJar.flatMap { it.archiveFile })
+        into(providers.provider { file("$serverDir/plugins") })
     }
 
     register<DefaultTask>("setupServer") {
@@ -100,11 +95,11 @@ tasks {
         }
     }
 
-    register<DefaultTask>("deployAndRun") {
+    register("deployAndRun") {
         group = "deployment"
         description = "Builds, deploys the plugin, then starts the Paper server."
 
-        dependsOn("deployPlugin")
+        dependsOn(deployPlugin)
         finalizedBy("runServer")
     }
 

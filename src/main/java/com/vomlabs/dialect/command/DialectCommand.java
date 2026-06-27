@@ -4,9 +4,11 @@ import com.vomlabs.dialect.bootstrap.DialectPlugin;
 import com.vomlabs.dialect.config.ConfigManager;
 import com.vomlabs.dialect.config.DialectConfig;
 import com.vomlabs.dialect.config.MessagesConfig;
-import com.vomlabs.dialect.service.ai.OpenRouterClient;
+import com.vomlabs.dialect.service.ai.AiProvider;
 import com.vomlabs.dialect.service.cache.CacheService;
 import com.vomlabs.dialect.service.detection.DetectionService;
+import com.vomlabs.dialect.service.effect.ParticleService;
+import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.service.translation.TranslationService;
 import com.vomlabs.dialect.model.ChatMessage;
 import com.vomlabs.dialect.util.ColorUtil;
@@ -14,6 +16,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,6 +24,13 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +50,9 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
     private final DetectionService detectionService;
     private final TranslationService translationService;
     private final CacheService cacheService;
-    private final OpenRouterClient openRouterClient;
+    private final AiProvider aiProvider;
+    private final SoundService soundService;
+    private final ParticleService particleService;
     private final Logger logger;
 
     public DialectCommand(
@@ -49,7 +61,9 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         DetectionService detectionService,
         TranslationService translationService,
         CacheService cacheService,
-        OpenRouterClient openRouterClient,
+        AiProvider aiProvider,
+        SoundService soundService,
+        ParticleService particleService,
         Logger logger
     ) {
         this.plugin = plugin;
@@ -57,7 +71,9 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         this.detectionService = detectionService;
         this.translationService = translationService;
         this.cacheService = cacheService;
-        this.openRouterClient = openRouterClient;
+        this.aiProvider = aiProvider;
+        this.soundService = soundService;
+        this.particleService = particleService;
         this.logger = logger;
     }
 
@@ -75,6 +91,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             case "detect" -> handleDetect(sender, args);
             case "translate" -> handleTranslate(sender, args);
             case "cache" -> handleCache(sender, args);
+            case "utils" -> handleUtils(sender, args);
             default -> sendHelp(sender);
         }
 
@@ -131,10 +148,13 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
 
         try {
             configManager.reload();
-            openRouterClient.shutdown();
+            aiProvider.shutdown();
             plugin.getDependencyInjector().reinitializeServices();
             MessagesConfig msg = configManager.messages();
             sender.sendMessage(ColorUtil.deserializeUncached(msg.prefix() + msg.reloadSuccess()));
+            if (sender instanceof Player p) {
+                soundService.playReloadComplete(p);
+            }
             logger.info("Plugin reloaded by " + sender.getName());
         } catch (Exception e) {
             logger.severe("Reload failed: " + e.getMessage());
@@ -189,7 +209,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             prefix + "<gray>Analysis Cache:</gray> <white>" + cacheService.analysisCacheSize() + " entries</white>"
         ));
 
-        int remaining = openRouterClient.getRateLimiter().getRemainingRequests();
+        int remaining = aiProvider.getRateLimiter().getRemainingRequests();
         sender.sendMessage(ColorUtil.deserializeUncached(
             prefix + "<gray>Rate Limit Remaining:</gray> <white>" + remaining + " requests</white>"
         ));
@@ -239,6 +259,11 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ColorUtil.deserializeUncached(
                     prefix + "<gray>Allowed:</gray> " + (detectionService.isLanguageAllowed(lang.code()) ? "<green>Yes</green>" : "<red>No</red>")
                 ));
+                targetPlayer.sendActionBar(ColorUtil.deserializeUncached(
+                    configManager.messages().actionbarDetected().replace("{lang}", lang.code())
+                ));
+                soundService.playDetectionComplete(targetPlayer);
+                particleService.spawnDetectionParticles(targetPlayer);
             }, () -> {
                 sender.sendMessage(ColorUtil.deserializeUncached(
                     prefix + "<red>Could not detect language for the provided text.</red>"
@@ -279,6 +304,10 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ColorUtil.deserializeUncached(
                 prefix + "<gray>Translated (" + targetLanguage + "):</gray> <white>" + translated + "</white>"
             ));
+            if (sender instanceof Player p) {
+                soundService.playTranslationComplete(p);
+                particleService.spawnTranslationParticles(p);
+            }
         }).exceptionally(throwable -> {
             logger.warning("Translate command failed: " + throwable.getMessage());
             sender.sendMessage(ColorUtil.deserializeUncached(
@@ -310,6 +339,130 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             prefix + "<green>Cache cleared.</green> <gray>Removed " + userBefore + " user entries and " + analysisBefore + " analysis entries.</gray>"
         ));
         logger.info("Cache cleared by " + sender.getName() + " (" + userBefore + " user, " + analysisBefore + " analysis entries)");
+        if (sender instanceof Player p) {
+            soundService.playCacheCleared(p);
+        }
+    }
+
+    private void handleUtils(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ColorUtil.deserializeUncached(
+                configManager.messages().prefix() + "<red>Usage: /dialect utils <papermc|...></red>"
+            ));
+            return;
+        }
+
+        switch (args[1].toLowerCase()) {
+            case "papermc" -> handlePaperMc(sender, args);
+            default -> sender.sendMessage(ColorUtil.deserializeUncached(
+                configManager.messages().prefix() + "<red>Unknown utility. Use: papermc</red>"
+            ));
+        }
+    }
+
+    private void handlePaperMc(CommandSender sender, String[] args) {
+        if (args.length < 3 || !args[2].equalsIgnoreCase("update")) {
+            sender.sendMessage(ColorUtil.deserializeUncached(
+                configManager.messages().prefix() + "<red>Usage: /dialect utils papermc update</red>"
+            ));
+            return;
+        }
+
+        if (!sender.hasPermission(PERMISSION_BASE) || !(sender instanceof Player)) {
+            sendNoPermission(sender);
+            return;
+        }
+
+        String prefix = configManager.messages().prefix();
+        sender.sendMessage(ColorUtil.deserializeUncached(prefix + "<yellow>Checking for latest Paper build...</yellow>"));
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                HttpClient http = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+                String version = Bukkit.getMinecraftVersion();
+                HttpRequest buildsReq = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.papermc.io/v2/projects/paper/versions/" + version + "/builds"))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+                HttpResponse<String> buildsRes = http.send(buildsReq, HttpResponse.BodyHandlers.ofString());
+
+                if (buildsRes.statusCode() != 200) {
+                    sender.sendMessage(ColorUtil.deserializeUncached(
+                        prefix + "<red>Failed to fetch builds (HTTP " + buildsRes.statusCode() + ")</red>"
+                    ));
+                    return;
+                }
+
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(buildsRes.body());
+                com.fasterxml.jackson.databind.JsonNode builds = root.get("builds");
+                if (builds == null || !builds.isArray() || builds.isEmpty()) {
+                    sender.sendMessage(ColorUtil.deserializeUncached(
+                        prefix + "<red>No builds found for version " + version + "</red>"
+                    ));
+                    return;
+                }
+
+                int latestBuild = builds.get(builds.size() - 1).get("build").asInt();
+                int currentBuild = Bukkit.getCurrentTick(); // not the real build number, just a placeholder
+
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<gray>Latest build:</gray> <white>" + latestBuild + "</white>"
+                ));
+
+                String jarName = "paper-" + version + "-" + latestBuild + ".jar";
+                String downloadUrl = "https://api.papermc.io/v2/projects/paper/versions/" + version
+                    + "/builds/" + latestBuild + "/downloads/" + jarName;
+
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<yellow>Downloading " + jarName + "...</yellow>"
+                ));
+
+                HttpRequest downloadReq = HttpRequest.newBuilder()
+                    .uri(URI.create(downloadUrl))
+                    .timeout(Duration.ofMinutes(5))
+                    .GET()
+                    .build();
+                HttpResponse<Path> downloadRes = http.send(downloadReq, HttpResponse.BodyHandlers.ofFile(
+                    Path.of(System.getProperty("user.home"), "Downloads", jarName)
+                ));
+
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<green>Downloaded to " + downloadRes.body() + "</green>"
+                ));
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<gold>Replace your server's paper.jar manually and restart the server.</gold>"
+                ));
+                logger.info("Paper updated: " + version + " build " + latestBuild);
+
+            } catch (java.net.http.HttpTimeoutException e) {
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<red>Request timed out while contacting PaperMC API.</red>"
+                ));
+            } catch (java.net.ConnectException e) {
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<red>Could not connect to PaperMC API. Check your internet connection.</red>"
+                ));
+            } catch (java.io.IOException e) {
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<red>IO error: " + e.getMessage() + "</red>"
+                ));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<red>Download was interrupted.</red>"
+                ));
+            } catch (Exception e) {
+                logger.warning("Paper update failed: " + e.getMessage());
+                sender.sendMessage(ColorUtil.deserializeUncached(
+                    prefix + "<red>Failed to update Paper: " + e.getMessage() + "</red>"
+                ));
+            }
+        });
     }
 
     private void sendNoPermission(CommandSender sender) {
@@ -329,6 +482,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             if ("detect".startsWith(input) && sender.hasPermission(PERMISSION_DETECT)) completions.add("detect");
             if ("translate".startsWith(input) && sender.hasPermission(PERMISSION_TRANSLATE)) completions.add("translate");
             if ("cache".startsWith(input) && sender.hasPermission(PERMISSION_CACHE)) completions.add("cache");
+            if ("utils".startsWith(input) && sender.hasPermission(PERMISSION_BASE)) completions.add("utils");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("cache")) {
                 if ("clear".startsWith(args[1].toLowerCase())) {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.vomlabs.dialect.config.DialectConfig;
 import com.vomlabs.dialect.model.ChatMessage;
 import com.vomlabs.dialect.model.Language;
-import com.vomlabs.dialect.service.ai.OpenRouterClient;
+import com.vomlabs.dialect.service.ai.AiProvider;
 import com.vomlabs.dialect.service.ai.PromptBuilder;
 import com.vomlabs.dialect.service.cache.CacheService;
 import com.vomlabs.dialect.util.TextSanitizer;
@@ -14,20 +14,20 @@ import java.util.logging.Logger;
 
 public class DetectionService {
 
-    private final OpenRouterClient openRouterClient;
+    private final AiProvider aiProvider;
     private final CacheService cacheService;
     private final DialectConfig.LanguageConfig languageConfig;
     private final DialectConfig.AIConfig aiConfig;
     private final Logger logger;
 
     public DetectionService(
-        OpenRouterClient openRouterClient,
+        AiProvider aiProvider,
         CacheService cacheService,
         DialectConfig.LanguageConfig languageConfig,
         DialectConfig.AIConfig aiConfig,
         Logger logger
     ) {
-        this.openRouterClient = openRouterClient;
+        this.aiProvider = aiProvider;
         this.cacheService = cacheService;
         this.languageConfig = languageConfig;
         this.aiConfig = aiConfig;
@@ -60,18 +60,18 @@ public class DetectionService {
             );
         }
 
-        return openRouterClient.analyzeMessage(
+        return aiProvider.analyzeMessage(
             PromptBuilder.createDetectionPrompt(sanitized).build()
         ).thenApply(response -> parseDetectionResponse(message, response, cacheKey));
     }
 
     private ChatMessage parseDetectionResponse(ChatMessage original, JsonNode response, String cacheKey) {
         try {
-            String detectedCode = openRouterClient.extractTextField(response, "detected_language");
-            double confidence = openRouterClient.extractDoubleField(response, "confidence", 0.0);
-            boolean containsSlang = openRouterClient.extractBooleanField(response, "contains_slang", false);
-            boolean isValidSlang = openRouterClient.extractBooleanField(response, "is_valid_slang_in_context", true);
-            String normalizedTranslation = openRouterClient.extractTextField(response, "normalized_translation");
+            String detectedCode = AiProvider.extractTextField(response, "detected_language");
+            double confidence = AiProvider.extractDoubleField(response, "confidence", 0.0);
+            boolean containsSlang = AiProvider.extractBooleanField(response, "contains_slang", false);
+            boolean isValidSlang = AiProvider.extractBooleanField(response, "is_valid_slang_in_context", true);
+            String normalizedTranslation = AiProvider.extractTextField(response, "normalized_translation");
 
             Optional<Language> detectedLanguage = Language.fromCode(detectedCode != null ? detectedCode : "");
 

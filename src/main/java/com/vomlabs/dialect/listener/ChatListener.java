@@ -8,6 +8,8 @@ import com.vomlabs.dialect.model.ChatMessage;
 import com.vomlabs.dialect.model.Language;
 import com.vomlabs.dialect.service.cache.CacheService;
 import com.vomlabs.dialect.service.detection.DetectionService;
+import com.vomlabs.dialect.service.effect.ParticleService;
+import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.service.format.ChatFormatter;
 import com.vomlabs.dialect.service.moderation.ModerationService;
 import com.vomlabs.dialect.service.translation.TranslationService;
@@ -35,6 +37,8 @@ public class ChatListener implements Listener {
     private final CacheService cacheService;
     private final ConfigManager configManager;
     private final ChatFormatter chatFormatter;
+    private final SoundService soundService;
+    private final ParticleService particleService;
     private final Logger logger;
     private final Map<UUID, Long> cooldowns;
 
@@ -45,6 +49,8 @@ public class ChatListener implements Listener {
         CacheService cacheService,
         ConfigManager configManager,
         ChatFormatter chatFormatter,
+        SoundService soundService,
+        ParticleService particleService,
         Logger logger
     ) {
         this.detectionService = detectionService;
@@ -53,6 +59,8 @@ public class ChatListener implements Listener {
         this.cacheService = cacheService;
         this.configManager = configManager;
         this.chatFormatter = chatFormatter;
+        this.soundService = soundService;
+        this.particleService = particleService;
         this.logger = logger;
         this.cooldowns = new ConcurrentHashMap<>();
     }
@@ -69,6 +77,8 @@ public class ChatListener implements Listener {
         if (isOnCooldown(player)) {
             String rateMsg = configManager.messages().rateLimited();
             player.sendMessage(ColorUtil.deserializeUncached(rateMsg));
+            player.sendActionBar(ColorUtil.deserializeUncached(rateMsg));
+            soundService.playActionFail(player);
             event.setCancelled(true);
             return;
         }
@@ -80,6 +90,7 @@ public class ChatListener implements Listener {
 
         ChatMessage initialMessage = ChatMessage.builder(player.getUniqueId(), player.getName(), plainText, event.message()).build();
 
+        player.sendActionBar(ColorUtil.deserializeUncached(configManager.messages().actionbarProcessing()));
         processChatAsync(player, initialMessage, event);
     }
 
@@ -108,16 +119,26 @@ public class ChatListener implements Listener {
                 applyChatFormat(player, event, message);
                 event.setCancelled(false);
                 setCooldown(player);
+                MessagesConfig msg = configManager.messages();
+                player.sendActionBar(ColorUtil.deserializeUncached(msg.actionbarAllowed()));
+                soundService.playMessageAllowed(player);
+                particleService.spawnAllowParticles(player);
             }
             case DENY -> {
                 MessagesConfig msg = configManager.messages();
                 Component warning = ColorUtil.deserializeUncached(msg.prefix() + msg.violationWarning());
                 player.sendMessage(warning);
+                player.sendActionBar(ColorUtil.deserializeUncached(msg.actionbarBlocked()));
+                soundService.playMessageDenied(player);
+                particleService.spawnDenyParticles(player);
             }
             case WARN -> {
                 MessagesConfig msg = configManager.messages();
                 Component warning = ColorUtil.deserializeUncached(msg.prefix() + msg.violationWarning());
                 player.sendMessage(warning);
+                player.sendActionBar(ColorUtil.deserializeUncached(msg.actionbarWarned()));
+                soundService.playMessageWarned(player);
+                particleService.spawnWarnParticles(player);
                 if (result.isViolation()) {
                     notifyStaff(player, message, result.reason());
                 }
@@ -143,6 +164,11 @@ public class ChatListener implements Listener {
                         event.setCancelled(false);
                         setCooldown(player);
 
+                        String actionbarMsg = msg.actionbarTranslated().replace("{lang}", sourceLang != null ? sourceLang.toUpperCase() : "UNKNOWN");
+                        player.sendActionBar(ColorUtil.deserializeUncached(actionbarMsg));
+                        soundService.playTranslationComplete(player);
+                        particleService.spawnTranslationParticles(player);
+
                         if (result.isViolation()) {
                             notifyStaff(player, message, result.reason());
                         }
@@ -166,6 +192,7 @@ public class ChatListener implements Listener {
                 applyChatFormat(player, event, message);
                 event.setCancelled(false);
                 setCooldown(player);
+                soundService.playDetectionComplete(player);
             }
         }
 
