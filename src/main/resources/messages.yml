@@ -13,3 +13,11 @@ correction_suggested: "<gold>Did you mean:</gold> <click:suggest_command:'{corre
 api_error: "<red>An error occurred while processing your request. Please try again later.</red>"
 rate_limited: "<red>Too many requests. Please wait before sending another message.</red>"
 ai_unavailable: "<red>The AI service is unavailable. Please try again later.</red>"
+
+# Actionbar messages (shown briefly above the hotbar)
+actionbar_translated: "<gray>Message translated to</gray> <lang:{lang}>{lang}</lang>"
+actionbar_detected: "<gray>Detected:</gray> <lang:{lang}>{lang}</lang>"
+actionbar_blocked: "<red>Message blocked</red>"
+actionbar_warned: "<gold>Language warning issued</gold>"
+actionbar_allowed: "<green>Message sent</green>"
+actionbar_processing: "<yellow>Processing message...</yellow>"

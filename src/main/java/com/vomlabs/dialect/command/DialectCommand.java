@@ -7,6 +7,8 @@ import com.vomlabs.dialect.config.MessagesConfig;
 import com.vomlabs.dialect.service.ai.AiProvider;
 import com.vomlabs.dialect.service.cache.CacheService;
 import com.vomlabs.dialect.service.detection.DetectionService;
+import com.vomlabs.dialect.service.effect.ParticleService;
+import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.service.translation.TranslationService;
 import com.vomlabs.dialect.model.ChatMessage;
 import com.vomlabs.dialect.util.ColorUtil;
@@ -49,6 +51,8 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
     private final TranslationService translationService;
     private final CacheService cacheService;
     private final AiProvider aiProvider;
+    private final SoundService soundService;
+    private final ParticleService particleService;
     private final Logger logger;
 
     public DialectCommand(
@@ -58,6 +62,8 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         TranslationService translationService,
         CacheService cacheService,
         AiProvider aiProvider,
+        SoundService soundService,
+        ParticleService particleService,
         Logger logger
     ) {
         this.plugin = plugin;
@@ -66,6 +72,8 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         this.translationService = translationService;
         this.cacheService = cacheService;
         this.aiProvider = aiProvider;
+        this.soundService = soundService;
+        this.particleService = particleService;
         this.logger = logger;
     }
 
@@ -144,6 +152,9 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             plugin.getDependencyInjector().reinitializeServices();
             MessagesConfig msg = configManager.messages();
             sender.sendMessage(ColorUtil.deserializeUncached(msg.prefix() + msg.reloadSuccess()));
+            if (sender instanceof Player p) {
+                soundService.playReloadComplete(p);
+            }
             logger.info("Plugin reloaded by " + sender.getName());
         } catch (Exception e) {
             logger.severe("Reload failed: " + e.getMessage());
@@ -248,6 +259,11 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ColorUtil.deserializeUncached(
                     prefix + "<gray>Allowed:</gray> " + (detectionService.isLanguageAllowed(lang.code()) ? "<green>Yes</green>" : "<red>No</red>")
                 ));
+                targetPlayer.sendActionBar(ColorUtil.deserializeUncached(
+                    configManager.messages().actionbarDetected().replace("{lang}", lang.code())
+                ));
+                soundService.playDetectionComplete(targetPlayer);
+                particleService.spawnDetectionParticles(targetPlayer);
             }, () -> {
                 sender.sendMessage(ColorUtil.deserializeUncached(
                     prefix + "<red>Could not detect language for the provided text.</red>"
@@ -288,6 +304,10 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ColorUtil.deserializeUncached(
                 prefix + "<gray>Translated (" + targetLanguage + "):</gray> <white>" + translated + "</white>"
             ));
+            if (sender instanceof Player p) {
+                soundService.playTranslationComplete(p);
+                particleService.spawnTranslationParticles(p);
+            }
         }).exceptionally(throwable -> {
             logger.warning("Translate command failed: " + throwable.getMessage());
             sender.sendMessage(ColorUtil.deserializeUncached(
@@ -319,6 +339,9 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
             prefix + "<green>Cache cleared.</green> <gray>Removed " + userBefore + " user entries and " + analysisBefore + " analysis entries.</gray>"
         ));
         logger.info("Cache cleared by " + sender.getName() + " (" + userBefore + " user, " + analysisBefore + " analysis entries)");
+        if (sender instanceof Player p) {
+            soundService.playCacheCleared(p);
+        }
     }
 
     private void handleUtils(CommandSender sender, String[] args) {

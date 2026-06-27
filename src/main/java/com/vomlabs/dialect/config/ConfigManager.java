@@ -83,7 +83,8 @@ public class ConfigManager {
                 parseCache(root),
                 parseModeration(root),
                 parseRedis(root),
-                parseChatFormat(root)
+                parseChatFormat(root),
+                parseEffects(root)
             );
         } catch (IOException e) {
             plugin.logger().severe("Error parsing config.yml: " + e.getMessage());
@@ -107,7 +108,13 @@ public class ConfigManager {
                 getString(root, "correction_suggested", "<gold>Did you mean:</gold> <click:suggest_command:'{correction}'><hover:show_text:'<gray>Click to accept</gray>'>{correction}</hover></click>"),
                 getString(root, "api_error", "<red>An error occurred while processing your request. Please try again later.</red>"),
                 getString(root, "rate_limited", "<red>Too many requests. Please wait before sending another message.</red>"),
-                getString(root, "ai_unavailable", "<red>The AI service is unavailable. Please try again later.</red>")
+                getString(root, "ai_unavailable", "<red>The AI service is unavailable. Please try again later.</red>"),
+                getString(root, "actionbar_translated", "<gray>Message translated to</gray> <lang:{lang}>{lang}</lang>"),
+                getString(root, "actionbar_detected", "<gray>Detected:</gray> <lang:{lang}>{lang}</lang>"),
+                getString(root, "actionbar_blocked", "<red>Message blocked</red>"),
+                getString(root, "actionbar_warned", "<gold>Language warning issued</gold>"),
+                getString(root, "actionbar_allowed", "<green>Message sent</green>"),
+                getString(root, "actionbar_processing", "<yellow>Processing message...</yellow>")
             );
         } catch (IOException e) {
             plugin.logger().severe("Error parsing messages.yml: " + e.getMessage());
@@ -215,6 +222,15 @@ public class ConfigManager {
         );
     }
 
+    private DialectConfig.EffectsConfig parseEffects(JsonNode root) {
+        JsonNode node = root.get("effects");
+        if (node == null) return new DialectConfig.EffectsConfig(true, true);
+        return new DialectConfig.EffectsConfig(
+            getBoolean(node, "sounds", true),
+            getBoolean(node, "particles", true)
+        );
+    }
+
     private DialectConfig.ChatFormatConfig parseChatFormat(JsonNode root) {
         JsonNode node = root.get("chat_format");
         if (node == null) return new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true);
@@ -249,7 +265,8 @@ public class ConfigManager {
             new DialectConfig.CacheConfig(10000, 30),
             new DialectConfig.ModerationConfig(Action.TRANSLATE, true, 2, true),
             new DialectConfig.RedisConfig(false, "redis://localhost:6379", "", 2, false),
-            new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true)
+            new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true),
+            new DialectConfig.EffectsConfig(true, true)
         );
     }
 

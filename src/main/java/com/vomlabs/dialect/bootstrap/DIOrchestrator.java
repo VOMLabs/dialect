@@ -10,6 +10,8 @@ import com.vomlabs.dialect.service.ai.AiProviderFactory;
 import com.vomlabs.dialect.service.cache.CacheService;
 import com.vomlabs.dialect.service.cache.RedisService;
 import com.vomlabs.dialect.service.detection.DetectionService;
+import com.vomlabs.dialect.service.effect.ParticleService;
+import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.service.format.ChatFormatter;
 import com.vomlabs.dialect.service.format.LPCHook;
 import com.vomlabs.dialect.service.format.LuckPermsHook;
@@ -40,6 +42,8 @@ public class DIOrchestrator {
     private DetectionService detectionService;
     private TranslationService translationService;
     private ModerationService moderationService;
+    private SoundService soundService;
+    private ParticleService particleService;
     private ChatListener chatListener;
     private PlayerQuitListener playerQuitListener;
     private DialectCommand dialectCommand;
@@ -78,6 +82,9 @@ public class DIOrchestrator {
             configManager.config().chatFormat(), logger
         );
 
+        soundService = new SoundService(configManager.config().effects().sounds(), logger);
+        particleService = new ParticleService(configManager.config().effects().particles(), logger);
+
         detectionService = new DetectionService(
             aiProvider, cacheService, configManager.config().languages(),
             configManager.config().ai(), logger
@@ -97,17 +104,17 @@ public class DIOrchestrator {
 
         chatListener = new ChatListener(
             detectionService, translationService, moderationService,
-            cacheService, configManager, chatFormatter, logger
+            cacheService, configManager, chatFormatter, soundService, particleService, logger
         );
 
         playerQuitListener = new PlayerQuitListener(cacheService);
 
         dialectCommand = new DialectCommand(
             plugin, configManager, detectionService, translationService,
-            cacheService, aiProvider, logger
+            cacheService, aiProvider, soundService, particleService, logger
         );
 
-        languageCommand = new LanguageCommand(cacheService, configManager);
+        languageCommand = new LanguageCommand(cacheService, configManager, soundService, particleService);
 
         logProviderStatus();
         registerListeners();
@@ -149,9 +156,12 @@ public class DIOrchestrator {
             aiProvider, cacheService, logger
         );
 
+        soundService = new SoundService(configManager.config().effects().sounds(), logger);
+        particleService = new ParticleService(configManager.config().effects().particles(), logger);
+
         chatListener = new ChatListener(
             detectionService, translationService, moderationService,
-            cacheService, configManager, chatFormatter, logger
+            cacheService, configManager, chatFormatter, soundService, particleService, logger
         );
 
         chatFormatter = new ChatFormatter(

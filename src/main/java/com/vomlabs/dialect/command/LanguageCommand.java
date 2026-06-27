@@ -4,6 +4,8 @@ import com.vomlabs.dialect.api.LanguageChangeEvent;
 import com.vomlabs.dialect.config.ConfigManager;
 import com.vomlabs.dialect.model.Language;
 import com.vomlabs.dialect.service.cache.CacheService;
+import com.vomlabs.dialect.service.effect.ParticleService;
+import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,10 +22,14 @@ public class LanguageCommand implements CommandExecutor, TabCompleter {
 
     private final CacheService cacheService;
     private final ConfigManager configManager;
+    private final SoundService soundService;
+    private final ParticleService particleService;
 
-    public LanguageCommand(CacheService cacheService, ConfigManager configManager) {
+    public LanguageCommand(CacheService cacheService, ConfigManager configManager, SoundService soundService, ParticleService particleService) {
         this.cacheService = cacheService;
         this.configManager = configManager;
+        this.soundService = soundService;
+        this.particleService = particleService;
     }
 
     @Override
@@ -79,6 +85,8 @@ public class LanguageCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(ColorUtil.deserializeUncached(
             configManager.messages().prefix() + "<green>Language set to <lang:" + language.get().code() + ">" + language.get().displayName() + "</lang>.</green>"
         ));
+        soundService.playLanguageSet(player);
+        particleService.spawnLanguageParticles(player);
 
         return true;
     }

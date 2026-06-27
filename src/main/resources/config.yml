@@ -84,3 +84,10 @@ chat_format:
   prefer_lpc: true
   # Whether to prefer LPCX formatting if the plugin is present
   prefer_lpcx: true
+
+# Sound and particle effects
+effects:
+  # Whether to play sound effects for various events (detection, translation, etc.)
+  sounds: true
+  # Whether to show particle effects for various events
+  particles: true

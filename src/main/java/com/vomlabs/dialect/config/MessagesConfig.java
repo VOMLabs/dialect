@@ -9,7 +9,13 @@ public record MessagesConfig(
     String correctionSuggested,
     String apiError,
     String rateLimited,
-    String aiUnavailable
+    String aiUnavailable,
+    String actionbarTranslated,
+    String actionbarDetected,
+    String actionbarBlocked,
+    String actionbarWarned,
+    String actionbarAllowed,
+    String actionbarProcessing
 ) {
     public MessagesConfig() {
         this(
@@ -21,7 +27,13 @@ public record MessagesConfig(
             "<gold>Did you mean:</gold> <click:suggest_command:'{correction}'><hover:show_text:'<gray>Click to accept</gray>'>{correction}</hover></click>",
             "<red>An error occurred while processing your request. Please try again later.</red>",
             "<red>Too many requests. Please wait before sending another message.</red>",
-            "<red>The AI service is unavailable. Please try again later.</red>"
+            "<red>The AI service is unavailable. Please try again later.</red>",
+            "<gray>Message translated to</gray> <lang:{lang}>{lang}</lang>",
+            "<gray>Detected:</gray> <lang:{lang}>{lang}</lang>",
+            "<red>Message blocked</red>",
+            "<gold>Language warning issued</gold>",
+            "<green>Message sent</green>",
+            "<yellow>Processing message...</yellow>"
         );
     }
 }

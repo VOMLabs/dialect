@@ -12,7 +12,8 @@ public record DialectConfig(
     CacheConfig cache,
     ModerationConfig moderation,
     RedisConfig redis,
-    ChatFormatConfig chatFormat
+    ChatFormatConfig chatFormat,
+    EffectsConfig effects
 ) {
     public DialectConfig {
         if (ai == null) ai = new AIConfig(true, "openrouter", "", "", "", 0.1, 5, 3, 500);
@@ -22,6 +23,7 @@ public record DialectConfig(
         if (moderation == null) moderation = new ModerationConfig(Action.TRANSLATE, true, 2, true);
         if (redis == null) redis = new RedisConfig(false, "redis://localhost:6379", "", 2, false);
         if (chatFormat == null) chatFormat = new ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true);
+        if (effects == null) effects = new EffectsConfig(true, true);
     }
 
     public record AIConfig(
@@ -79,5 +81,9 @@ public record DialectConfig(
 
     public record ChatFormatConfig(
         boolean enabled, String template, boolean preferLpc, boolean preferLpcx
+    ) {}
+
+    public record EffectsConfig(
+        boolean sounds, boolean particles
     ) {}
 }
