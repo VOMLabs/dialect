@@ -12,20 +12,20 @@ AI-powered language enforcement, detection, translation, and moderation layer fo
 - **Redis/Dragonfly** — Distributed caching for multi-server networks
 - **Chat Formatting** — Integrates with PlaceholderAPI, LuckPerms, LPC, LPCX
 - **Actionbar & Effects** — Visual and audio feedback for players
-- **PaperMC Updater** — `/dialect utils papermc update` downloads latest Paper build
+- **PaperMC Updater** — `/lazydialect utils papermc update` downloads latest Paper build
 
 ## Commands
 
 | Command | Permission | Description |
 |---------|-----------|-------------|
-| `/dialect help` | `dialect.admin` | Show command help |
-| `/dialect reload` | `dialect.admin.reload` | Reload configuration |
-| `/dialect status` | `dialect.admin.status` | View plugin status |
-| `/dialect detect <text>` | `dialect.admin.detect` | Detect language of text |
-| `/dialect translate <lang> <text>` | `dialect.admin.translate` | Translate text |
-| `/dialect cache clear` | `dialect.admin.cache` | Clear cached data |
-| `/dialect utils papermc update` | `dialect.admin` | Download latest Paper build |
-| `/language [code]` | `dialect.command.language` | Set preferred language |
+| `/lazydialect help` | `lazydialect.admin` | Show command help |
+| `/lazydialect reload` | `lazydialect.admin.reload` | Reload configuration |
+| `/lazydialect status` | `lazydialect.admin.status` | View plugin status |
+| `/lazydialect detect <text>` | `lazydialect.admin.detect` | Detect language of text |
+| `/lazydialect translate <lang> <text>` | `lazydialect.admin.translate` | Translate text |
+| `/lazydialect cache clear` | `lazydialect.admin.cache` | Clear cached data |
+| `/lazydialect utils papermc update` | `lazydialect.admin` | Download latest Paper build |
+| `/language [code]` | `lazydialect.command.language` | Set preferred language |
 
 ## Configuration
 
@@ -57,9 +57,29 @@ ai:
 ## Building
 
 ```bash
-./gradlew build       # Clean build
-./gradlew deployPlugin  # Build + copy to server plugins
+./gradlew build              # Clean build
+./gradlew deployPlugin       # Build + copy to server plugins
 ```
+
+## Publishing to Modrinth
+
+Releases are automatically published to Modrinth when a tag is pushed. To enable this:
+
+1. Create a project on [Modrinth](https://modrinth.com) (if you haven't already)
+2. Generate a Modrinth API token:
+   - Go to https://modrinth.com/settings/tokens
+   - Click **New Token**
+   - Give it a name (e.g., `dialect-release`)
+   - Select the **Upload Versions** permission
+   - Scope it to your project
+   - Copy the generated token
+3. Set the token and project ID in your GitHub repository:
+   ```bash
+   gh secret set MODRINTH_TOKEN           # Paste the token
+   gh variable set MODRINTH_ID             # Your Modrinth project ID
+   ```
+
+The Modrinth version body is automatically populated from this README.
 
 ## License
 

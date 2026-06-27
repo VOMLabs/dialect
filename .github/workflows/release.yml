@@ -71,3 +71,4 @@ jobs:
             1.21.11
           java: 21
           changelog: ${{ github.event.release.body }}
+          body: file:README.md
