@@ -56,6 +56,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Update Modrinth project description
+        if: ${{ secrets.MODRINTH_TOKEN != '' && vars.MODRINTH_ID != '' }}
+        run: |
+          BODY=$(cat README.md | jq -Rs .)
+          curl -s --request PATCH \
+            --url "https://api.modrinth.com/v2/project/${{ vars.MODRINTH_ID }}" \
+            --header "Authorization: ${{ secrets.MODRINTH_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data "{\"body\": $BODY}"
+        continue-on-error: true
+
       - name: Publish to Modrinth
         if: ${{ secrets.MODRINTH_TOKEN != '' && vars.MODRINTH_ID != '' }}
         uses: Kir-Antipov/mc-publish@v3.3
