@@ -52,7 +52,9 @@ public class RetryStrategy {
 
     private boolean isRetryable(Throwable throwable) {
         String message = throwable.getMessage();
-        if (message == null) return true;
+        if (message == null) {
+            return true;
+        }
 
         int httpCode = extractHttpCode(message);
         return httpCode == 0

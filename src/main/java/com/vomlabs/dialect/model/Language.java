@@ -86,8 +86,12 @@ public record Language(String code, String displayName) {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Language language)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Language language)) {
+            return false;
+        }
         return code.equals(language.code);
     }
 

@@ -19,8 +19,12 @@ public class LPCHook {
         this.lpcAvailable = Bukkit.getPluginManager().getPlugin(LPC_PLUGIN_NAME) != null;
         this.lpcxAvailable = Bukkit.getPluginManager().getPlugin(LPCX_PLUGIN_NAME) != null;
 
-        if (lpcAvailable) logger.info("LightPluginChat (LPC) detected.");
-        if (lpcxAvailable) logger.info("LPCX detected.");
+        if (lpcAvailable) {
+            logger.info("LightPluginChat (LPC) detected.");
+        }
+        if (lpcxAvailable) {
+            logger.info("LPCX detected.");
+        }
     }
 
     public boolean isLpcAvailable() {
@@ -36,15 +40,25 @@ public class LPCHook {
     }
 
     public boolean shouldUseLpc(boolean preferLpc, boolean preferLpcx) {
-        if (preferLpcx && lpcxAvailable) return false;
-        if (preferLpc && lpcAvailable) return true;
-        if (lpcxAvailable) return false;
+        if (preferLpcx && lpcxAvailable) {
+            return false;
+        }
+        if (preferLpc && lpcAvailable) {
+            return true;
+        }
+        if (lpcxAvailable) {
+            return false;
+        }
         return lpcAvailable;
     }
 
     public boolean shouldUseLpcx(boolean preferLpc, boolean preferLpcx) {
-        if (preferLpcx && lpcxAvailable) return true;
-        if (preferLpc && lpcAvailable) return false;
+        if (preferLpcx && lpcxAvailable) {
+            return true;
+        }
+        if (preferLpc && lpcAvailable) {
+            return false;
+        }
         return false;
     }
 }

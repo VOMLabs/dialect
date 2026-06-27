@@ -7,8 +7,12 @@ public record Context(
     Optional<String> playerLanguage
 ) {
     public Context {
-        if (mode == null) throw new IllegalArgumentException("mode must not be null");
-        if (playerLanguage == null) playerLanguage = Optional.empty();
+        if (mode == null) {
+            throw new IllegalArgumentException("mode must not be null");
+        }
+        if (playerLanguage == null) {
+            playerLanguage = Optional.empty();
+        }
     }
 
     public static Context whitelist() {

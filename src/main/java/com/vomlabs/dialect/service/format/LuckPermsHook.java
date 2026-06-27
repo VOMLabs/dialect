@@ -53,10 +53,14 @@ public class LuckPermsHook {
     }
 
     public Optional<String> getPrefix(Player player) {
-        if (!available || player == null) return Optional.empty();
+        if (!available || player == null) {
+            return Optional.empty();
+        }
         try {
             Object user = getUserMethod.invoke(userManager, player.getUniqueId());
-            if (user == null) return Optional.empty();
+            if (user == null) {
+                return Optional.empty();
+            }
             Object cachedData = user.getClass().getMethod("getCachedData").invoke(user);
             Object metaData = getMetaDataMethod.invoke(cachedData);
             String prefix = (String) getPrefixMethod.invoke(metaData);
@@ -67,10 +71,14 @@ public class LuckPermsHook {
     }
 
     public Optional<String> getSuffix(Player player) {
-        if (!available || player == null) return Optional.empty();
+        if (!available || player == null) {
+            return Optional.empty();
+        }
         try {
             Object user = getUserMethod.invoke(userManager, player.getUniqueId());
-            if (user == null) return Optional.empty();
+            if (user == null) {
+                return Optional.empty();
+            }
             Object cachedData = user.getClass().getMethod("getCachedData").invoke(user);
             Object metaData = getMetaDataMethod.invoke(cachedData);
             String suffix = (String) getSuffixMethod.invoke(metaData);
@@ -81,10 +89,14 @@ public class LuckPermsHook {
     }
 
     public Optional<String> getPrimaryGroup(Player player) {
-        if (!available || player == null) return Optional.empty();
+        if (!available || player == null) {
+            return Optional.empty();
+        }
         try {
             Object user = getUserMethod.invoke(userManager, player.getUniqueId());
-            if (user == null) return Optional.empty();
+            if (user == null) {
+                return Optional.empty();
+            }
             String group = (String) getPrimaryGroupMethod.invoke(user);
             return Optional.ofNullable(group);
         } catch (Exception e) {

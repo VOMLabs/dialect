@@ -71,7 +71,9 @@ public class SoundService {
     }
 
     private void play(Player player, Sound sound, float volume, float pitch) {
-        if (!enabled || player == null) return;
+        if (!enabled || player == null) {
+            return;
+        }
         player.playSound(player.getLocation(), sound, volume, pitch);
     }
 }

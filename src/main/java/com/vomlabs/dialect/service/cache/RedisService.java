@@ -45,7 +45,9 @@ public class RedisService {
                 URI parsed = URI.create(uriString);
                 if (parsed.getUserInfo() == null || parsed.getUserInfo().isBlank()) {
                     String hostPart = parsed.getHost();
-                    if (parsed.getPort() > 0) hostPart += ":" + parsed.getPort();
+                    if (parsed.getPort() > 0) {
+                        hostPart += ":" + parsed.getPort();
+                    }
                     uriString = parsed.getScheme() + "://:" + password + "@" + hostPart
                         + (parsed.getPath() != null ? parsed.getPath() : "/0");
                     pwInjected = true;

@@ -16,12 +16,24 @@ public record ChatMessage(
     boolean isValidSlangInContext
 ) {
     public ChatMessage {
-        if (playerId == null) throw new IllegalArgumentException("playerId must not be null");
-        if (playerName == null || playerName.isBlank()) throw new IllegalArgumentException("playerName must not be null or blank");
-        if (content == null || content.isBlank()) throw new IllegalArgumentException("content must not be null or blank");
-        if (originalComponent == null) throw new IllegalArgumentException("originalComponent must not be null");
-        if (detectedLanguage == null) detectedLanguage = Optional.empty();
-        if (normalizedTranslation == null) normalizedTranslation = Optional.empty();
+        if (playerId == null) {
+            throw new IllegalArgumentException("playerId must not be null");
+        }
+        if (playerName == null || playerName.isBlank()) {
+            throw new IllegalArgumentException("playerName must not be null or blank");
+        }
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("content must not be null or blank");
+        }
+        if (originalComponent == null) {
+            throw new IllegalArgumentException("originalComponent must not be null");
+        }
+        if (detectedLanguage == null) {
+            detectedLanguage = Optional.empty();
+        }
+        if (normalizedTranslation == null) {
+            normalizedTranslation = Optional.empty();
+        }
     }
 
     public static Builder builder(UUID playerId, String playerName, String content, Component originalComponent) {

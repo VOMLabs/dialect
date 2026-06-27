@@ -15,7 +15,9 @@ public final class TextSanitizer {
     }
 
     public static String sanitize(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
         String result = CONTROL_CHARS.matcher(input).replaceAll("");
         result = REPEATED_CHARACTERS.matcher(result).replaceAll("$1".repeat(Math.min(MAX_REPEATED_CHARS, 3)));
         result = EXCESSIVE_WHITESPACE.matcher(result).replaceAll(" ");
@@ -27,8 +29,12 @@ public final class TextSanitizer {
     }
 
     public static String truncate(String input, int maxLength) {
-        if (input == null) return "";
-        if (input.length() <= maxLength) return input;
+        if (input == null) {
+            return "";
+        }
+        if (input.length() <= maxLength) {
+            return input;
+        }
         return input.substring(0, maxLength);
     }
 

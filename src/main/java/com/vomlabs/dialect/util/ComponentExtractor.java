@@ -15,7 +15,9 @@ public final class ComponentExtractor {
     }
 
     public static String extractPlainText(Component component) {
-        if (component == null) return "";
+        if (component == null) {
+            return "";
+        }
         return PLAIN_SERIALIZER.serialize(component);
     }
 
@@ -26,7 +28,9 @@ public final class ComponentExtractor {
     }
 
     public static boolean isEmpty(Component component) {
-        if (component == null) return true;
+        if (component == null) {
+            return true;
+        }
         return extractAndNormalize(component).isEmpty();
     }
 

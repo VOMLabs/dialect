@@ -37,17 +37,23 @@ public final class ColorUtil {
     }
 
     public static String serialize(Component component) {
-        if (component == null) return "";
+        if (component == null) {
+            return "";
+        }
         return MINI_MESSAGE.serialize(component);
     }
 
     public static String toPlainText(Component component) {
-        if (component == null) return "";
+        if (component == null) {
+            return "";
+        }
         return PLAIN_SERIALIZER.serialize(component);
     }
 
     public static Component replaceText(Component component, String target, String replacement) {
-        if (component == null) return Component.empty();
+        if (component == null) {
+            return Component.empty();
+        }
         return component.replaceText(builder ->
             builder.matchLiteral(target).replacement(replacement)
         );

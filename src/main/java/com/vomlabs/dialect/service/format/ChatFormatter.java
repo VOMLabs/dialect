@@ -29,9 +29,15 @@ public class ChatFormatter {
     }
 
     public boolean shouldFormat() {
-        if (!config.enabled()) return false;
-        if (config.preferLpcx() && lpcHook.isLpcxAvailable()) return false;
-        if (config.preferLpc() && lpcHook.isLpcAvailable()) return false;
+        if (!config.enabled()) {
+            return false;
+        }
+        if (config.preferLpcx() && lpcHook.isLpcxAvailable()) {
+            return false;
+        }
+        if (config.preferLpc() && lpcHook.isLpcAvailable()) {
+            return false;
+        }
         return true;
     }
 

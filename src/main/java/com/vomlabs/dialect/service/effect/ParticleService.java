@@ -56,7 +56,9 @@ public class ParticleService {
     }
 
     private void spawnAround(Player player, Particle particle, int count, double offsetX, double offsetY, double offsetZ) {
-        if (!enabled || player == null) return;
+        if (!enabled || player == null) {
+            return;
+        }
         Location loc = player.getLocation().add(0, 1, 0);
         player.spawnParticle(particle, loc, count, offsetX, offsetY, offsetZ, 0.01);
     }
