@@ -69,7 +69,7 @@ public class ChatListener implements Listener {
     public void onAsyncChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
 
-        if (player.hasPermission("dialect.bypass")) {
+        if (player.hasPermission("lazydialect.bypass")) {
             applyChatFormat(player, event);
             return;
         }
@@ -221,7 +221,7 @@ public class ChatListener implements Listener {
 
         Component staffComponent = ColorUtil.deserializeUncached(staffMsg);
         for (Player online : org.bukkit.Bukkit.getOnlinePlayers()) {
-            if (online.hasPermission("dialect.admin") && !online.equals(player)) {
+            if (online.hasPermission("lazydialect.admin") && !online.equals(player)) {
                 online.sendMessage(staffComponent);
             }
         }
@@ -251,11 +251,17 @@ public class ChatListener implements Listener {
 
     private boolean isOnCooldown(Player player) {
         var modConfig = configManager.config().moderation();
-        if (modConfig.cooldownSeconds() <= 0) return false;
-        if (player.hasPermission("dialect.bypass")) return false;
+        if (modConfig.cooldownSeconds() <= 0) {
+            return false;
+        }
+        if (player.hasPermission("lazydialect.bypass")) {
+            return false;
+        }
 
         Long lastMessage = cooldowns.get(player.getUniqueId());
-        if (lastMessage == null) return false;
+        if (lastMessage == null) {
+            return false;
+        }
 
         long elapsed = System.currentTimeMillis() - lastMessage;
         return elapsed < modConfig.cooldownSeconds() * 1000L;

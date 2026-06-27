@@ -1,6 +1,6 @@
 package com.vomlabs.dialect.bootstrap;
 
-import com.vomlabs.dialect.command.DialectCommand;
+import com.vomlabs.dialect.command.LazyDialectCommand;
 import com.vomlabs.dialect.command.LanguageCommand;
 import com.vomlabs.dialect.config.ConfigManager;
 import com.vomlabs.dialect.listener.ChatListener;
@@ -13,12 +13,16 @@ import com.vomlabs.dialect.service.detection.DetectionService;
 import com.vomlabs.dialect.service.effect.ParticleService;
 import com.vomlabs.dialect.service.effect.SoundService;
 import com.vomlabs.dialect.service.format.ChatFormatter;
+import com.vomlabs.dialect.service.format.GeyserHook;
 import com.vomlabs.dialect.service.format.LPCHook;
 import com.vomlabs.dialect.service.format.LuckPermsHook;
 import com.vomlabs.dialect.service.format.PlaceholderAPIHook;
+import com.vomlabs.dialect.service.format.VaultHook;
+import com.vomlabs.dialect.service.format.WorldGuardHook;
 import com.vomlabs.dialect.service.moderation.ModerationService;
 import com.vomlabs.dialect.service.translation.DeepLClient;
 import com.vomlabs.dialect.service.translation.TranslationService;
+import com.vomlabs.dialect.service.update.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
@@ -27,7 +31,7 @@ import java.util.logging.Logger;
 
 public class DIOrchestrator {
 
-    private final DialectPlugin plugin;
+    private final LazyDialectPlugin plugin;
     private final Logger logger;
     private final ConfigManager configManager;
 
@@ -38,7 +42,11 @@ public class DIOrchestrator {
     private PlaceholderAPIHook placeholderAPIHook;
     private LuckPermsHook luckPermsHook;
     private LPCHook lpcHook;
+    private VaultHook vaultHook;
+    private WorldGuardHook worldGuardHook;
+    private GeyserHook geyserHook;
     private ChatFormatter chatFormatter;
+    private UpdateChecker updateChecker;
     private DetectionService detectionService;
     private TranslationService translationService;
     private ModerationService moderationService;
@@ -46,17 +54,17 @@ public class DIOrchestrator {
     private ParticleService particleService;
     private ChatListener chatListener;
     private PlayerQuitListener playerQuitListener;
-    private DialectCommand dialectCommand;
+    private LazyDialectCommand lazyDialectCommand;
     private LanguageCommand languageCommand;
 
-    public DIOrchestrator(DialectPlugin plugin) {
+    public DIOrchestrator(LazyDialectPlugin plugin) {
         this.plugin = plugin;
         this.logger = plugin.logger();
         this.configManager = new ConfigManager(plugin);
     }
 
     public void initialize() {
-        logger.info("Initializing Dialect services...");
+        logger.info("Initializing LazyDialect services...");
 
         configManager.load();
 
@@ -76,6 +84,9 @@ public class DIOrchestrator {
         placeholderAPIHook = new PlaceholderAPIHook(logger);
         luckPermsHook = new LuckPermsHook(logger);
         lpcHook = new LPCHook(logger);
+        vaultHook = new VaultHook(logger);
+        worldGuardHook = new WorldGuardHook(logger);
+        geyserHook = new GeyserHook(logger);
 
         chatFormatter = new ChatFormatter(
             placeholderAPIHook, luckPermsHook, lpcHook,
@@ -84,6 +95,9 @@ public class DIOrchestrator {
 
         soundService = new SoundService(configManager.config().effects().sounds(), logger);
         particleService = new ParticleService(configManager.config().effects().particles(), logger);
+
+        updateChecker = new UpdateChecker(plugin, plugin.getPluginMeta().getVersion(), logger);
+        updateChecker.checkAsync();
 
         detectionService = new DetectionService(
             aiProvider, cacheService, configManager.config().languages(),
@@ -109,12 +123,12 @@ public class DIOrchestrator {
 
         playerQuitListener = new PlayerQuitListener(cacheService);
 
-        dialectCommand = new DialectCommand(
+        lazyDialectCommand = new LazyDialectCommand(
             plugin, configManager, detectionService, translationService,
             cacheService, aiProvider, soundService, particleService, logger
         );
 
-        languageCommand = new LanguageCommand(cacheService, configManager, soundService, particleService);
+        languageCommand = new LanguageCommand(cacheService, configManager, soundService, particleService, logger);
 
         logProviderStatus();
         registerListeners();
@@ -173,11 +187,19 @@ public class DIOrchestrator {
     }
 
     public void shutdown() {
-        logger.info("Shutting down Dialect services...");
-        if (aiProvider != null) aiProvider.shutdown();
-        if (deepLClient != null) deepLClient.shutdown();
-        if (redisService != null) redisService.shutdown();
-        if (cacheService != null) cacheService.clearAll();
+        logger.info("Shutting down LazyDialect services...");
+        if (aiProvider != null) {
+            aiProvider.shutdown();
+        }
+        if (deepLClient != null) {
+            deepLClient.shutdown();
+        }
+        if (redisService != null) {
+            redisService.shutdown();
+        }
+        if (cacheService != null) {
+            cacheService.clearAll();
+        }
     }
 
     private void logProviderStatus() {
@@ -202,6 +224,16 @@ public class DIOrchestrator {
         if (hasRedis) {
             logger.info("Redis caching: " + (redisService.isConnected() ? "Connected" : "Disconnected"));
         }
+
+        if (vaultHook.isAvailable()) {
+            logger.info("Vault hook: available");
+        }
+        if (worldGuardHook.isAnyAvailable()) {
+            logger.info("WorldGuard/WE hook: WG=" + worldGuardHook.isWorldGuardAvailable() + " WE=" + worldGuardHook.isWorldEditAvailable());
+        }
+        if (geyserHook.isGeyserAvailable() || geyserHook.isFloodgateAvailable()) {
+            logger.info("Geyser/Floodgate hook: Geyser=" + geyserHook.isGeyserAvailable() + " Floodgate=" + geyserHook.isFloodgateAvailable());
+        }
     }
 
     private void registerListeners() {
@@ -212,7 +244,7 @@ public class DIOrchestrator {
     }
 
     private void registerCommands() {
-        registerCommand("dialect", dialectCommand);
+        registerCommand("lazydialect", lazyDialectCommand);
         registerCommand("language", languageCommand);
         logger.info("Registered commands.");
     }
@@ -220,7 +252,7 @@ public class DIOrchestrator {
     private void registerCommand(String name, Object executor) {
         PluginCommand cmd = plugin.getCommand(name);
         if (cmd != null) {
-            if (executor instanceof DialectCommand dc) {
+            if (executor instanceof LazyDialectCommand dc) {
                 cmd.setExecutor(dc);
                 cmd.setTabCompleter(dc);
             } else if (executor instanceof LanguageCommand lc) {
@@ -241,5 +273,9 @@ public class DIOrchestrator {
     public TranslationService getTranslationService() { return translationService; }
     public ModerationService getModerationService() { return moderationService; }
     public ChatFormatter getChatFormatter() { return chatFormatter; }
-    public DialectCommand getDialectCommand() { return dialectCommand; }
+    public LazyDialectCommand getLazyDialectCommand() { return lazyDialectCommand; }
+    public UpdateChecker getUpdateChecker() { return updateChecker; }
+    public VaultHook getVaultHook() { return vaultHook; }
+    public WorldGuardHook getWorldGuardHook() { return worldGuardHook; }
+    public GeyserHook getGeyserHook() { return geyserHook; }
 }

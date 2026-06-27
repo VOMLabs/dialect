@@ -28,5 +28,5 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Dialect-plugin
-          path: build/libs/Dialect-*.jar
+          name: LazyDialect-plugin
+          path: build/libs/LazyDialect-*.jar

@@ -1,6 +1,6 @@
 package com.vomlabs.dialect.bootstrap;
 
-import com.vomlabs.dialect.api.DialectAPI;
+import com.vomlabs.dialect.api.LazyDialectAPI;
 import com.vomlabs.dialect.model.Language;
 import com.vomlabs.dialect.model.ChatMessage;
 import com.vomlabs.dialect.util.ComponentExtractor;
@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
-public class DialectPlugin extends JavaPlugin implements DialectAPI {
+public class LazyDialectPlugin extends JavaPlugin implements LazyDialectAPI {
 
     private DIOrchestrator dependencyInjector;
     private boolean ready;
@@ -29,7 +29,7 @@ public class DialectPlugin extends JavaPlugin implements DialectAPI {
         this.dependencyInjector.initialize();
 
         this.ready = true;
-        logger.info("Dialect v" + getPluginMeta().getVersion() + " enabled successfully.");
+        logger.info("LazyDialect v" + getPluginMeta().getVersion() + " enabled successfully.");
         logger.info("AI configured: " + dependencyInjector.getConfigManager().config().ai().isConfigured());
     }
 
@@ -39,7 +39,7 @@ public class DialectPlugin extends JavaPlugin implements DialectAPI {
         if (dependencyInjector != null) {
             dependencyInjector.shutdown();
         }
-        logger.info("Dialect disabled.");
+        logger.info("LazyDialect disabled.");
     }
 
     public DIOrchestrator getDependencyInjector() {
@@ -50,7 +50,7 @@ public class DialectPlugin extends JavaPlugin implements DialectAPI {
         return logger != null ? logger : getLogger();
     }
 
-    // ─── DialectAPI Implementation ───
+    // ─── LazyDialectAPI Implementation ───
 
     @Override
     public CompletableFuture<ChatMessage> analyzeMessage(Player player, String message) {
@@ -91,7 +91,9 @@ public class DialectPlugin extends JavaPlugin implements DialectAPI {
 
     @Override
     public Optional<Language> getPlayerLanguage(UUID playerId) {
-        if (!ready || playerId == null) return Optional.empty();
+        if (!ready || playerId == null) {
+            return Optional.empty();
+        }
         return dependencyInjector.getCacheService().getUserLanguage(playerId);
     }
 
@@ -111,13 +113,15 @@ public class DialectPlugin extends JavaPlugin implements DialectAPI {
 
     @Override
     public boolean isLanguageAllowed(String languageCode) {
-        if (!ready || languageCode == null) return true;
+        if (!ready || languageCode == null) {
+            return true;
+        }
         return dependencyInjector.getDetectionService().isLanguageAllowed(languageCode);
     }
 
     @Override
     public boolean isPlayerBypassing(Player player) {
-        return player != null && player.hasPermission("dialect.bypass");
+        return player != null && player.hasPermission("lazydialect.bypass");
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.vomlabs.dialect.command;
 
-import com.vomlabs.dialect.bootstrap.DialectPlugin;
+import com.vomlabs.dialect.bootstrap.LazyDialectPlugin;
 import com.vomlabs.dialect.config.ConfigManager;
 import com.vomlabs.dialect.config.DialectConfig;
 import com.vomlabs.dialect.config.MessagesConfig;
@@ -36,16 +36,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class DialectCommand implements CommandExecutor, TabCompleter {
+public class LazyDialectCommand implements CommandExecutor, TabCompleter {
 
-    private static final String PERMISSION_BASE = "dialect.admin";
-    private static final String PERMISSION_RELOAD = "dialect.admin.reload";
-    private static final String PERMISSION_STATUS = "dialect.admin.status";
-    private static final String PERMISSION_DETECT = "dialect.admin.detect";
-    private static final String PERMISSION_TRANSLATE = "dialect.admin.translate";
-    private static final String PERMISSION_CACHE = "dialect.admin.cache";
+    private static final String PERMISSION_BASE = "lazydialect.admin";
+    private static final String PERMISSION_RELOAD = "lazydialect.admin.reload";
+    private static final String PERMISSION_STATUS = "lazydialect.admin.status";
+    private static final String PERMISSION_DETECT = "lazydialect.admin.detect";
+    private static final String PERMISSION_TRANSLATE = "lazydialect.admin.translate";
+    private static final String PERMISSION_CACHE = "lazydialect.admin.cache";
 
-    private final DialectPlugin plugin;
+    private final LazyDialectPlugin plugin;
     private final ConfigManager configManager;
     private final DetectionService detectionService;
     private final TranslationService translationService;
@@ -55,8 +55,8 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
     private final ParticleService particleService;
     private final Logger logger;
 
-    public DialectCommand(
-        DialectPlugin plugin,
+    public LazyDialectCommand(
+        LazyDialectPlugin plugin,
         ConfigManager configManager,
         DetectionService detectionService,
         TranslationService translationService,
@@ -102,39 +102,39 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         MessagesConfig msg = configManager.messages();
         Component prefix = ColorUtil.deserializeUncached(msg.prefix());
 
-        sender.sendMessage(prefix.append(ColorUtil.deserializeUncached("<gold>===== Dialect Commands =====</gold>")));
+        sender.sendMessage(prefix.append(ColorUtil.deserializeUncached("<gold>===== LazyDialect Commands =====</gold>")));
 
         if (sender.hasPermission(PERMISSION_RELOAD)) {
             sender.sendMessage(prefix.append(ColorUtil.deserializeUncached(
-                "<click:run_command:'/dialect reload'><hover:show_text:'<gray>Click to reload</gray>'><gold>/dialect reload</gold></hover></click>"
+                "<click:run_command:'/lazydialect reload'><hover:show_text:'<gray>Click to reload</gray>'><gold>/lazydialect reload</gold></hover></click>"
                 + " <dark_gray>-</dark_gray> <gray>Reload configuration and caches</gray>"
             )));
         }
 
         if (sender.hasPermission(PERMISSION_STATUS)) {
             sender.sendMessage(prefix.append(ColorUtil.deserializeUncached(
-                "<click:run_command:'/dialect status'><hover:show_text:'<gray>Click to view status</gray>'><gold>/dialect status</gold></hover></click>"
+                "<click:run_command:'/lazydialect status'><hover:show_text:'<gray>Click to view status</gray>'><gold>/lazydialect status</gold></hover></click>"
                 + " <dark_gray>-</dark_gray> <gray>View plugin status and metrics</gray>"
             )));
         }
 
         if (sender.hasPermission(PERMISSION_DETECT)) {
             sender.sendMessage(prefix.append(ColorUtil.deserializeUncached(
-                "<gold>/dialect detect <text></gold>"
+                "<gold>/lazydialect detect <text></gold>"
                 + " <dark_gray>-</dark_gray> <gray>Detect language of text</gray>"
             )));
         }
 
         if (sender.hasPermission(PERMISSION_TRANSLATE)) {
             sender.sendMessage(prefix.append(ColorUtil.deserializeUncached(
-                "<gold>/dialect translate <lang> <text></gold>"
+                "<gold>/lazydialect translate <lang> <text></gold>"
                 + " <dark_gray>-</dark_gray> <gray>Translate text to target language</gray>"
             )));
         }
 
         if (sender.hasPermission(PERMISSION_CACHE)) {
             sender.sendMessage(prefix.append(ColorUtil.deserializeUncached(
-                "<click:run_command:'/dialect cache clear'><hover:show_text:'<gray>Click to clear cache</gray>'><gold>/dialect cache clear</gold></hover></click>"
+                "<click:run_command:'/lazydialect cache clear'><hover:show_text:'<gray>Click to clear cache</gray>'><gold>/lazydialect cache clear</gold></hover></click>"
                 + " <dark_gray>-</dark_gray> <gray>Clear cached data</gray>"
             )));
         }
@@ -173,7 +173,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
         DialectConfig config = configManager.config();
         String prefix = configManager.messages().prefix();
 
-        sender.sendMessage(ColorUtil.deserializeUncached(prefix + "<gold>===== Dialect Status =====</gold>"));
+        sender.sendMessage(ColorUtil.deserializeUncached(prefix + "<gold>===== LazyDialect Status =====</gold>"));
 
         boolean aiEnabled = config.ai().enabled();
         boolean apiConfigured = config.ai().isConfigured();
@@ -223,7 +223,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
 
         if (args.length < 2) {
             sender.sendMessage(ColorUtil.deserializeUncached(
-                configManager.messages().prefix() + "<red>Usage: /dialect detect <text></red>"
+                configManager.messages().prefix() + "<red>Usage: /lazydialect detect <text></red>"
             ));
             return;
         }
@@ -286,7 +286,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
 
         if (args.length < 3) {
             sender.sendMessage(ColorUtil.deserializeUncached(
-                configManager.messages().prefix() + "<red>Usage: /dialect translate <lang> <text></red>"
+                configManager.messages().prefix() + "<red>Usage: /lazydialect translate <lang> <text></red>"
             ));
             return;
         }
@@ -325,7 +325,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
 
         if (args.length < 2 || !args[1].equalsIgnoreCase("clear")) {
             sender.sendMessage(ColorUtil.deserializeUncached(
-                configManager.messages().prefix() + "<red>Usage: /dialect cache clear</red>"
+                configManager.messages().prefix() + "<red>Usage: /lazydialect cache clear</red>"
             ));
             return;
         }
@@ -347,7 +347,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
     private void handleUtils(CommandSender sender, String[] args) {
         if (args.length < 2) {
             sender.sendMessage(ColorUtil.deserializeUncached(
-                configManager.messages().prefix() + "<red>Usage: /dialect utils <papermc|...></red>"
+                configManager.messages().prefix() + "<red>Usage: /lazydialect utils <papermc|...></red>"
             ));
             return;
         }
@@ -363,7 +363,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
     private void handlePaperMc(CommandSender sender, String[] args) {
         if (args.length < 3 || !args[2].equalsIgnoreCase("update")) {
             sender.sendMessage(ColorUtil.deserializeUncached(
-                configManager.messages().prefix() + "<red>Usage: /dialect utils papermc update</red>"
+                configManager.messages().prefix() + "<red>Usage: /lazydialect utils papermc update</red>"
             ));
             return;
         }
@@ -408,7 +408,7 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
                 }
 
                 int latestBuild = builds.get(builds.size() - 1).get("build").asInt();
-                int currentBuild = Bukkit.getCurrentTick(); // not the real build number, just a placeholder
+                int currentBuild = Bukkit.getCurrentTick();
 
                 sender.sendMessage(ColorUtil.deserializeUncached(
                     prefix + "<gray>Latest build:</gray> <white>" + latestBuild + "</white>"
@@ -476,13 +476,27 @@ public class DialectCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 1) {
             String input = args[0].toLowerCase();
-            if ("help".startsWith(input) && sender.hasPermission(PERMISSION_BASE)) completions.add("help");
-            if ("reload".startsWith(input) && sender.hasPermission(PERMISSION_RELOAD)) completions.add("reload");
-            if ("status".startsWith(input) && sender.hasPermission(PERMISSION_STATUS)) completions.add("status");
-            if ("detect".startsWith(input) && sender.hasPermission(PERMISSION_DETECT)) completions.add("detect");
-            if ("translate".startsWith(input) && sender.hasPermission(PERMISSION_TRANSLATE)) completions.add("translate");
-            if ("cache".startsWith(input) && sender.hasPermission(PERMISSION_CACHE)) completions.add("cache");
-            if ("utils".startsWith(input) && sender.hasPermission(PERMISSION_BASE)) completions.add("utils");
+            if ("help".startsWith(input) && sender.hasPermission(PERMISSION_BASE)) {
+                completions.add("help");
+            }
+            if ("reload".startsWith(input) && sender.hasPermission(PERMISSION_RELOAD)) {
+                completions.add("reload");
+            }
+            if ("status".startsWith(input) && sender.hasPermission(PERMISSION_STATUS)) {
+                completions.add("status");
+            }
+            if ("detect".startsWith(input) && sender.hasPermission(PERMISSION_DETECT)) {
+                completions.add("detect");
+            }
+            if ("translate".startsWith(input) && sender.hasPermission(PERMISSION_TRANSLATE)) {
+                completions.add("translate");
+            }
+            if ("cache".startsWith(input) && sender.hasPermission(PERMISSION_CACHE)) {
+                completions.add("cache");
+            }
+            if ("utils".startsWith(input) && sender.hasPermission(PERMISSION_BASE)) {
+                completions.add("utils");
+            }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("cache")) {
                 if ("clear".startsWith(args[1].toLowerCase())) {

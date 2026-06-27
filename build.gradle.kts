@@ -45,7 +45,7 @@ tasks.withType<JavaCompile> {
 
 tasks {
     shadowJar {
-        archiveBaseName.set("Dialect")
+        archiveBaseName.set("LazyDialect")
         archiveClassifier.set("")
         archiveVersion.set(project.version.toString())
 

@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class LanguageCommand implements CommandExecutor, TabCompleter {
 
@@ -24,12 +25,15 @@ public class LanguageCommand implements CommandExecutor, TabCompleter {
     private final ConfigManager configManager;
     private final SoundService soundService;
     private final ParticleService particleService;
+    @SuppressWarnings("unused")
+    private final Logger logger;
 
-    public LanguageCommand(CacheService cacheService, ConfigManager configManager, SoundService soundService, ParticleService particleService) {
+    public LanguageCommand(CacheService cacheService, ConfigManager configManager, SoundService soundService, ParticleService particleService, Logger logger) {
         this.cacheService = cacheService;
         this.configManager = configManager;
         this.soundService = soundService;
         this.particleService = particleService;
+        this.logger = logger;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class LanguageCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (!player.hasPermission("dialect.command.language")) {
+        if (!player.hasPermission("lazydialect.command.language")) {
             player.sendMessage(ColorUtil.deserializeUncached(configManager.messages().prefix() + configManager.messages().noPermission()));
             return true;
         }

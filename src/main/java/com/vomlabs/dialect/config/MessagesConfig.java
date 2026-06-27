@@ -19,7 +19,7 @@ public record MessagesConfig(
 ) {
     public MessagesConfig() {
         this(
-            "<gradient:#4facfe:#00f2fe>[Dialect]</gradient> ",
+            "<gradient:#4facfe:#00f2fe>[LazyDialect]</gradient> ",
             "<red>Your message was not sent because it violates the server language policy.</red>",
             "<gray>[Translated from {from}]: {message}</gray>",
             "<red>You do not have permission to execute this command.</red>",

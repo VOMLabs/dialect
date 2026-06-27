@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.vomlabs.dialect.bootstrap.DialectPlugin;
+import com.vomlabs.dialect.bootstrap.LazyDialectPlugin;
 import com.vomlabs.dialect.model.Action;
 import com.vomlabs.dialect.util.ColorUtil;
 import net.kyori.adventure.text.Component;
@@ -20,13 +20,13 @@ public class ConfigManager {
     private static final String CONFIG_FILE_NAME = "config.yml";
     private static final String MESSAGES_FILE_NAME = "messages.yml";
 
-    private final DialectPlugin plugin;
+    private final LazyDialectPlugin plugin;
     private final Path dataDirectory;
     private final ObjectMapper yamlMapper;
     private DialectConfig currentConfig;
     private MessagesConfig messagesConfig;
 
-    public ConfigManager(DialectPlugin plugin) {
+    public ConfigManager(LazyDialectPlugin plugin) {
         this.plugin = plugin;
         this.dataDirectory = plugin.getDataFolder().toPath();
         this.yamlMapper = new ObjectMapper(new YAMLFactory());
@@ -100,7 +100,7 @@ public class ConfigManager {
             }
             JsonNode root = yamlMapper.readTree(messagesFile);
             return new MessagesConfig(
-                getString(root, "prefix", "<gradient:#4facfe:#00f2fe>[Dialect]</gradient> "),
+                getString(root, "prefix", "<gradient:#4facfe:#00f2fe>[LazyDialect]</gradient> "),
                 getString(root, "violation_warning", "<red>Your message was not sent because it violates the server language policy.</red>"),
                 getString(root, "translation_format", "<gray>[Translated from {from}]: {message}</gray>"),
                 getString(root, "no_permission", "<red>You do not have permission to execute this command.</red>"),
@@ -132,7 +132,9 @@ public class ConfigManager {
 
     private DialectConfig.AIConfig parseAI(JsonNode root) {
         JsonNode node = root.get("ai");
-        if (node == null) return new DialectConfig.AIConfig(true, "openrouter", "", "", "", 0.1, 5, 3, 500);
+        if (node == null) {
+            return new DialectConfig.AIConfig(true, "openrouter", "", "", "", 0.1, 5, 3, 500);
+        }
 
         String provider = getString(node, "provider", "openrouter");
         String[] defaults = PROVIDER_DEFAULTS.getOrDefault(provider, PROVIDER_DEFAULTS.get("openrouter"));
@@ -159,7 +161,9 @@ public class ConfigManager {
 
     private DialectConfig.DeepLConfig parseDeepL(JsonNode root) {
         JsonNode node = root.get("deepl");
-        if (node == null) return new DialectConfig.DeepLConfig("", true, 5);
+        if (node == null) {
+            return new DialectConfig.DeepLConfig("", true, 5);
+        }
 
         return new DialectConfig.DeepLConfig(
             getString(node, "api_key", ""),
@@ -170,7 +174,9 @@ public class ConfigManager {
 
     private DialectConfig.LanguageConfig parseLanguages(JsonNode root) {
         JsonNode node = root.get("languages");
-        if (node == null) return new DialectConfig.LanguageConfig("WHITELIST", List.of("en", "de"), "en", Action.WARN, 0.75);
+        if (node == null) {
+            return new DialectConfig.LanguageConfig("WHITELIST", List.of("en", "de"), "en", Action.WARN, 0.75);
+        }
 
         String mode = getString(node, "mode", "WHITELIST");
         List<String> allowed = new ArrayList<>();
@@ -178,7 +184,9 @@ public class ConfigManager {
         if (allowedNode instanceof ArrayNode arrayNode) {
             arrayNode.forEach(lang -> allowed.add(lang.asText("en")));
         }
-        if (allowed.isEmpty()) allowed.add("en");
+        if (allowed.isEmpty()) {
+            allowed.add("en");
+        }
 
         String serverDefault = getString(node, "server_default", "en");
         Action fallback = parseAction(getString(node, "fallback_behavior", "WARN"));
@@ -189,7 +197,9 @@ public class ConfigManager {
 
     private DialectConfig.CacheConfig parseCache(JsonNode root) {
         JsonNode node = root.get("cache");
-        if (node == null) return new DialectConfig.CacheConfig(10000, 30);
+        if (node == null) {
+            return new DialectConfig.CacheConfig(10000, 30);
+        }
 
         return new DialectConfig.CacheConfig(
             getInt(node, "maximum_size", 10000),
@@ -199,7 +209,9 @@ public class ConfigManager {
 
     private DialectConfig.ModerationConfig parseModeration(JsonNode root) {
         JsonNode node = root.get("moderation");
-        if (node == null) return new DialectConfig.ModerationConfig(Action.TRANSLATE, true, 2, true);
+        if (node == null) {
+            return new DialectConfig.ModerationConfig(Action.TRANSLATE, true, 2, true);
+        }
 
         return new DialectConfig.ModerationConfig(
             parseAction(getString(node, "on_violation", "TRANSLATE")),
@@ -211,7 +223,9 @@ public class ConfigManager {
 
     private DialectConfig.RedisConfig parseRedis(JsonNode root) {
         JsonNode node = root.get("redis");
-        if (node == null) return new DialectConfig.RedisConfig(false, "redis://localhost:6379", "", 2, false);
+        if (node == null) {
+            return new DialectConfig.RedisConfig(false, "redis://localhost:6379", "", 2, false);
+        }
 
         return new DialectConfig.RedisConfig(
             getBoolean(node, "enabled", false),
@@ -224,7 +238,9 @@ public class ConfigManager {
 
     private DialectConfig.EffectsConfig parseEffects(JsonNode root) {
         JsonNode node = root.get("effects");
-        if (node == null) return new DialectConfig.EffectsConfig(true, true);
+        if (node == null) {
+            return new DialectConfig.EffectsConfig(true, true);
+        }
         return new DialectConfig.EffectsConfig(
             getBoolean(node, "sounds", true),
             getBoolean(node, "particles", true)
@@ -233,7 +249,9 @@ public class ConfigManager {
 
     private DialectConfig.ChatFormatConfig parseChatFormat(JsonNode root) {
         JsonNode node = root.get("chat_format");
-        if (node == null) return new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true);
+        if (node == null) {
+            return new DialectConfig.ChatFormatConfig(true, "<%luckperms_prefix%><player_name><gray>:</gray> %message%", true, true);
+        }
 
         return new DialectConfig.ChatFormatConfig(
             getBoolean(node, "enabled", true),
@@ -271,7 +289,9 @@ public class ConfigManager {
     }
 
     private Action parseAction(String value) {
-        if (value == null) return Action.TRANSLATE;
+        if (value == null) {
+            return Action.TRANSLATE;
+        }
         try {
             return Action.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
