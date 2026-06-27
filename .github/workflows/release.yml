@@ -57,9 +57,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Modrinth
+        if: ${{ secrets.MODRINTH_TOKEN != '' && vars.MODRINTH_ID != '' }}
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: REQUIRED_MODRINTH_PROJECT_ID
+          modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: build/libs/LazyDialect-${{ steps.version.outputs.VERSION }}.jar
           name: LazyDialect ${{ steps.version.outputs.VERSION }}
