@@ -85,6 +85,29 @@ All user-facing messages can be customized in `messages.yml`.
 - Paper 1.21.11+
 - An API key for at least one AI provider or DeepL
 
+## Dependencies
+
+LazyDialect bundles all its core libraries (Jackson, Adventure, Caffeine, SnakeYAML) in the JAR — no extra downloads needed.
+
+### Optional (enhance features when installed)
+
+| Plugin | Feature |
+|--------|---------|
+| [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) | Chat placeholders |
+| [LuckPerms](https://luckperms.net) | Permission-based language rules |
+| LPC / LPCX | Advanced chat formatting |
+| [Vault](https://www.spigotmc.org/resources/vault.34315/) | Economy and permissions |
+| [WorldGuard](https://enginehub.org/worldguard/) / WorldEdit (FAWE) | Region-based language enforcement |
+| [Geyser](https://geysermc.org) / [Floodgate](https://wiki.geysermc.org/floodgate/) | Bedrock player support |
+
+### Optional (configured in `config.yml`)
+
+| Service | Purpose |
+|---------|---------|
+| Redis / Dragonfly | Distributed caching for multi-server networks |
+| AI provider (OpenRouter, OpenAI, etc.) | AI language features |
+| DeepL | Fallback translation |
+
 ## Building from Source
 
 ```bash
