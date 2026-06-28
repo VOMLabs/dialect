@@ -97,6 +97,7 @@ LazyDialect bundles all its core libraries (Jackson, Adventure, Caffeine, SnakeY
 | [LuckPerms](https://luckperms.net) | Permission-based language rules |
 | LPC / LPCX | Advanced chat formatting |
 | [Vault](https://www.spigotmc.org/resources/vault.34315/) | Economy and permissions |
+| [VaultUnlocked](https://modrinth.com/plugin/vaultunlocked) | Modern Vault replacement with multi-currency and Folia support |
 | [WorldGuard](https://enginehub.org/worldguard/) / WorldEdit (FAWE) | Region-based language enforcement |
 | [Geyser](https://geysermc.org) / [Floodgate](https://wiki.geysermc.org/floodgate/) | Bedrock player support |
 

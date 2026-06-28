@@ -18,6 +18,7 @@ import com.vomlabs.dialect.service.format.LPCHook;
 import com.vomlabs.dialect.service.format.LuckPermsHook;
 import com.vomlabs.dialect.service.format.PlaceholderAPIHook;
 import com.vomlabs.dialect.service.format.VaultHook;
+import com.vomlabs.dialect.service.format.VaultUnlockedHook;
 import com.vomlabs.dialect.service.format.WorldGuardHook;
 import com.vomlabs.dialect.service.moderation.ModerationService;
 import com.vomlabs.dialect.service.translation.DeepLClient;
@@ -43,6 +44,7 @@ public class DIOrchestrator {
     private LuckPermsHook luckPermsHook;
     private LPCHook lpcHook;
     private VaultHook vaultHook;
+    private VaultUnlockedHook vaultUnlockedHook;
     private WorldGuardHook worldGuardHook;
     private GeyserHook geyserHook;
     private ChatFormatter chatFormatter;
@@ -85,6 +87,7 @@ public class DIOrchestrator {
         luckPermsHook = new LuckPermsHook(logger);
         lpcHook = new LPCHook(logger);
         vaultHook = new VaultHook(logger);
+        vaultUnlockedHook = new VaultUnlockedHook(logger);
         worldGuardHook = new WorldGuardHook(logger);
         geyserHook = new GeyserHook(logger);
 
@@ -233,6 +236,9 @@ public class DIOrchestrator {
         if (vaultHook.isAvailable()) {
             logger.info("Vault hook: available");
         }
+        if (vaultUnlockedHook.isAvailable()) {
+            logger.info("VaultUnlocked hook: available");
+        }
         if (worldGuardHook.isAnyAvailable()) {
             logger.info("WorldGuard/WE hook: WG="
                 + worldGuardHook.isWorldGuardAvailable()
@@ -285,6 +291,7 @@ public class DIOrchestrator {
     public LazyDialectCommand getLazyDialectCommand() { return lazyDialectCommand; }
     public UpdateChecker getUpdateChecker() { return updateChecker; }
     public VaultHook getVaultHook() { return vaultHook; }
+    public VaultUnlockedHook getVaultUnlockedHook() { return vaultUnlockedHook; }
     public WorldGuardHook getWorldGuardHook() { return worldGuardHook; }
     public GeyserHook getGeyserHook() { return geyserHook; }
 }
