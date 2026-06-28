@@ -1,14 +1,23 @@
 # LazyDialect
 
 <div>
-  <a href="https://github.com/itzzjustmateo/dialect/releases">
-    <img src="https://shieldcn.dev/github/release/itzzjustmateo/dialect.svg?label=Release&variant=outline" alt="Release" />
+  <a href="https://github.com/itzzjustmateo/dialect">
+    <img src="https://shieldcn.dev/badge/GitHub-itzzjustmateo/dialect-181717.svg?variant=outline" alt="GitHub" />
   </a>
-  <a href="https://github.com/itzzjustmateo/dialect/actions/workflows/build.yml">
-    <img src="https://shieldcn.dev/github/ci/itzzjustmateo/dialect.svg?workflow=build.yml&label=Build&logo=github&variant=outline" alt="Build" />
+  <a href="https://modrinth.com/project/lazydialect">
+    <img src="https://shieldcn.dev/badge/Modrinth-lazydialect-00d375.svg?variant=outline" alt="Modrinth" />
   </a>
-  <a href="https://github.com/itzzjustmateo/dialect/actions/workflows/release.yml">
-    <img src="https://shieldcn.dev/github/ci/itzzjustmateo/dialect.svg?workflow=release.yml&label=Release+Workflow&logo=github&variant=outline" alt="Release Workflow" />
+  <a href="LICENSE">
+    <img src="https://shieldcn.dev/badge/License-MIT-green.svg?variant=outline" alt="License" />
+  </a>
+  <a href="https://papermc.io">
+    <img src="https://shieldcn.dev/badge/Paper-1.21.11-2b7dfa.svg?variant=outline" alt="Paper" />
+  </a>
+  <a href="https://purpurmc.org">
+    <img src="https://shieldcn.dev/badge/Purpur-1.21.x-9b59b6.svg?variant=outline" alt="Purpur" />
+  </a>
+  <a href="https://github.com/PaperMC/Folia">
+    <img src="https://shieldcn.dev/badge/Folia-Soon-e67e22.svg?variant=outline" alt="Folia Soon" />
   </a>
 </div>
 
