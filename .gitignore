@@ -27,3 +27,4 @@ run
 *.swp
 *.swo
 *.kate-swp
+bin/
