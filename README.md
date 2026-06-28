@@ -1,4 +1,8 @@
-# Dialect
+# LazyDialect
+
+[![GitHub](https://img.shields.io/badge/GitHub-itzzjustmateo/dialect-181717?logo=github)](https://github.com/itzzjustmateo/dialect)
+[![Modrinth](https://img.shields.io/badge/Modrinth-lazydialect-00d375?logo=modrinth)](https://modrinth.com/project/lazydialect)
+[![License](https://img.shields.io/github/license/itzzjustmateo/dialect)](LICENSE)
 
 AI-powered language enforcement, detection, translation, and moderation layer for Minecraft Paper servers.
 
@@ -10,9 +14,17 @@ AI-powered language enforcement, detection, translation, and moderation layer fo
 - **Multi-Provider AI** — Supports OpenRouter, OpenAI, Anthropic, Gemini, and HuggingFace
 - **Slang Validation** — Detects and validates slang usage in context
 - **Redis/Dragonfly** — Distributed caching for multi-server networks
-- **Chat Formatting** — Integrates with PlaceholderAPI, LuckPerms, LPC, LPCX
+- **Chat Formatting** — Integrates with PlaceholderAPI, LuckPerms, LPC, LPCX, Vault, WorldGuard, and Geyser
 - **Actionbar & Effects** — Visual and audio feedback for players
-- **PaperMC Updater** — `/lazydialect utils papermc update` downloads latest Paper build
+- **Auto-Updater** — `/lazydialect utils papermc update` downloads latest Paper build
+
+## Installation
+
+1. Download the latest `LazyDialect-*.jar` from [Modrinth](https://modrinth.com/project/lazydialect) or [GitHub Releases](https://github.com/itzzjustmateo/dialect/releases)
+2. Place the JAR in your server's `plugins/` folder
+3. Restart your server
+4. Configure `plugins/LazyDialect/config.yml` with your AI provider API key
+5. (Optional) Customize messages in `plugins/LazyDialect/messages.yml`
 
 ## Commands
 
@@ -29,7 +41,7 @@ AI-powered language enforcement, detection, translation, and moderation layer fo
 
 ## Configuration
 
-Configure AI providers in `config.yml`:
+Configure AI providers in `config.yml` (generated on first run):
 
 ```yaml
 ai:
@@ -37,6 +49,8 @@ ai:
   api_key: ""              # Your API key
   model: ""                # Leave empty for provider default
 ```
+
+All user-facing messages can be customized in `messages.yml`.
 
 ### AI Provider Defaults
 
@@ -54,7 +68,7 @@ ai:
 - Paper 1.21.11+
 - An API key for at least one AI provider or DeepL
 
-## Building
+## Building from Source
 
 ```bash
 ./gradlew build              # Clean build
@@ -66,7 +80,7 @@ ai:
 Releases are automatically published to Modrinth when a tag is pushed. To enable this:
 
 1. Create a project on [Modrinth](https://modrinth.com) (if you haven't already)
-2. Generate a Modrinth API token:
+2. Generate a Modrinth PAT:
    - Go to https://modrinth.com/settings/pats
    - Click **New Token**
    - Give it a name (e.g., `dialect-release`)
@@ -76,10 +90,10 @@ Releases are automatically published to Modrinth when a tag is pushed. To enable
 3. Set the token and project ID in your GitHub repository:
    ```bash
    gh secret set MODRINTH_TOKEN           # Paste the token
-   gh variable set MODRINTH_ID             # Your Modrinth project ID
+   gh variable set MODRINTH_ID            # Your Modrinth project slug or ID
    ```
 
-The Modrinth version body is automatically populated from this README.
+The Modrinth version body and project description are automatically populated from this README.
 
 ## License
 

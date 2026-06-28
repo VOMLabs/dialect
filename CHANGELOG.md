@@ -10,7 +10,8 @@
 - Redis/Dragonfly distributed caching
 - PaperMC auto-updater (`/lazydialect utils papermc update`)
 - Sound effects, particle effects, and actionbar messages
-- Chat formatting with PlaceholderAPI, LuckPerms, LPC/LPCX integration
-- Vault, WorldGuard/FAWE, Geyser/Floodgate integration hooks
+- Chat formatting with PlaceholderAPI, LuckPerms, LPC, LPCX, Vault, WorldGuard, and Geyser
 - Auto-update checker (Modrinth + GitHub fallback)
 - Fully configurable via `config.yml` and `messages.yml`
+- VirusTotal scanning on every build
+- GitHub Actions CI, CodeRabbit PR review, and Dependabot
