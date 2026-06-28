@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.vomlabs.dialect"
-version = "0.1.0-ALPHA"
+version = "0.2.0-ALPHA"
 description = "AI-powered language enforcement, detection, translation, and moderation layer for Minecraft server chat."
 
 val serverDir: String = providers.gradleProperty("serverDir")
