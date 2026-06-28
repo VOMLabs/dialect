@@ -17,23 +17,30 @@ import java.util.logging.Logger;
 
 public class LazyDialectPlugin extends JavaPlugin implements LazyDialectAPI {
 
-    public static final ErrorTracker ERROR_TRACKER = ErrorTracker.contextAware();
-
-    private final BukkitContext fastStatsContext = new BukkitContext.Factory(
-        this, "22610ed0f310522c01cf9c94d263dcd7"
-    )
-        .errorTrackerService(ERROR_TRACKER)
-        .metrics(Metrics.Factory::create)
-        .create();
-
+    private static ErrorTracker errorTracker;
+    private BukkitContext fastStatsContext;
     private DIOrchestrator dependencyInjector;
     private boolean ready;
     private Logger logger;
+
+    private static ErrorTracker errorTracker() {
+        if (errorTracker == null) {
+            errorTracker = ErrorTracker.contextAware();
+        }
+        return errorTracker;
+    }
 
     @Override
     public void onEnable() {
         this.logger = getLogger();
         this.ready = false;
+
+        this.fastStatsContext = new BukkitContext.Factory(
+            this, "22610ed0f310522c01cf9c94d263dcd7"
+        )
+            .errorTrackerService(errorTracker())
+            .metrics(Metrics.Factory::create)
+            .create();
 
         this.dependencyInjector = new DIOrchestrator(this);
         this.dependencyInjector.initialize();
@@ -52,7 +59,9 @@ public class LazyDialectPlugin extends JavaPlugin implements LazyDialectAPI {
         if (dependencyInjector != null) {
             dependencyInjector.shutdown();
         }
-        fastStatsContext.shutdown();
+        if (fastStatsContext != null) {
+            fastStatsContext.shutdown();
+        }
         logger.info("LazyDialect disabled.");
     }
 

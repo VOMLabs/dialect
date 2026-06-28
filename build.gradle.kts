@@ -70,6 +70,10 @@ tasks.withType<JavaCompile> {
 }
 
 tasks {
+    jar {
+        enabled = false
+    }
+
     shadowJar {
         archiveBaseName.set("LazyDialect")
         archiveClassifier.set("")
