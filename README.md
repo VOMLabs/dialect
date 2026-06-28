@@ -1,8 +1,16 @@
 # LazyDialect
 
-[![GitHub](https://img.shields.io/badge/GitHub-itzzjustmateo/dialect-181717?logo=github)](https://github.com/itzzjustmateo/dialect)
-[![Modrinth](https://img.shields.io/badge/Modrinth-lazydialect-00d375?logo=modrinth)](https://modrinth.com/project/lazydialect)
-[![License](https://img.shields.io/github/license/itzzjustmateo/dialect)](LICENSE)
+<div>
+  <a href="https://github.com/itzzjustmateo/dialect/releases">
+    <img src="https://shieldcn.dev/github/release/itzzjustmateo/dialect.svg?label=Release&variant=outline" alt="Release" />
+  </a>
+  <a href="https://github.com/itzzjustmateo/dialect/actions/workflows/build.yml">
+    <img src="https://shieldcn.dev/github/ci/itzzjustmateo/dialect.svg?workflow=build.yml&label=Build&logo=github&variant=outline" alt="Build" />
+  </a>
+  <a href="https://github.com/itzzjustmateo/dialect/actions/workflows/release.yml">
+    <img src="https://shieldcn.dev/github/ci/itzzjustmateo/dialect.svg?workflow=release.yml&label=Release+Workflow&logo=github&variant=outline" alt="Release Workflow" />
+  </a>
+</div>
 
 AI-powered language enforcement, detection, translation, and moderation layer for Minecraft Paper servers.
 
